@@ -11,20 +11,17 @@ class GeoGame(object):
 
         self.smallim = Image.open("800px-Whole_world_-_land_and_oceans_12000.jpg")
         self.im2 = ImageTk.PhotoImage(self.smallim)
-
+	self.click = []
         self.label = Label(image=self.im2)
         click = self.label.bind("<Button-1>", self.callback)
         self.label.pack()
         data = self.load_file()
-        self.city = self.choose_city(data)
-	x = [x.strip() for x in self.city.split(',')] 
-
-        print self.city
+        
 
     def callback(self, event):
         print "clicked at", event.x, event.y
-        click = [event.x, event.y]
-	return click
+        self.click = [event.x, event.y]
+        self.game()
 
     def load_file(self):
         f = open('database.txt', 'r').readlines()
@@ -38,6 +35,10 @@ class GeoGame(object):
         number = random.randint(0,1)
         return data[number]
     
+    def game():
+        self.city = self.choose_city(data)
+	self.city = [x.strip() for x in self.city.split(',')]
+
 
 root = Tk()
 myGeoGame = GeoGame(root)
