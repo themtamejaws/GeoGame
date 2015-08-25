@@ -15,8 +15,8 @@ class GeoGame(object):
         self.label = Label(image=self.im2)
         click = self.label.bind("<Button-1>", self.callback)
         self.label.pack()
-        data = self.load_file()
-        self.gamesetup(data)
+        self.data = self.load_file()
+        self.gamesetup()
 
     def callback(self, event):
         print "clicked at", event.x, event.y
@@ -31,25 +31,25 @@ class GeoGame(object):
         #f.close()
         return data
 
-    def choose_city(self, data):
-        citylen = len(data)
-        number = random.randint(0,0)#citylen-1) #maybe not -1
-        return data[number]
+    def choose_city(self):
+        citylen = len(self.data)
+        number = random.randint(0,citylen-1) #maybe not -1
+        return self.data[number]
     
-    def gamesetup(self, data):
-        self.city = self.choose_city(data)
+    def gamesetup(self):
+        self.city = self.choose_city()
 	self.city = [x.strip() for x in self.city.split(',')]
-        print self.city
 	print "Your city to find is: " + self.city[1]
+	self.score = 0
+
 
     def gameplay(self):
-        print "well done for clicking on the screen!"
-	print self.click[0], self.city[4]
-
 	if str(self.click[0]) == str(self.city[4]) and str(self.click[1]) == str(self.city[5]):
 	    print "success"
+	    self.gamesetup()
 	else:
   	    print "you suck"
+	    self.gamesetup()
 
 root = Tk()
 myGeoGame = GeoGame(root)
