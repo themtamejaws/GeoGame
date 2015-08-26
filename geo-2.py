@@ -1,10 +1,10 @@
 from PIL import ImageTk
 from PIL import Image
-from Tkinter import Tk, Label, Button
+from Tkinter import Tk, Label, Button, Frame, Text, END, DISABLED#, ENABLED
 import random
 import math
                 
-class GeoGame(object):
+class GeoGame(Frame):
 
     def __init__(self, master):
         self.master = master
@@ -16,6 +16,10 @@ class GeoGame(object):
         self.label = Label(image=self.im2)
         click = self.label.bind("<Button-1>", self.callback)
         self.label.pack()
+        self.text = Text(self.master, height=1, width=40)
+        self.text.pack()
+        self.text.insert(END, "Your next city is: ")
+        self.text.config(state=DISABLED)
         self.data = self.load_file()
         self.tot_score = 0
         self.gamesetup()
@@ -42,6 +46,10 @@ class GeoGame(object):
         self.city = self.choose_city()
         self.city = [x.strip() for x in self.city.split(',')]
         print "Your city to find is: " + self.city[1]
+        self.text.config(state="normal")
+        self.text.delete("1.19", END)
+        self.text.insert(END, self.city[1])
+        self.text.config(state=DISABLED)
         self.score = 0
 
 
