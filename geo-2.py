@@ -1,6 +1,7 @@
 from PIL import ImageTk
 from PIL import Image
-from Tkinter import Tk, Label, Button, Frame, Text, END, DISABLED#, ENABLED
+from Tkinter import Tk, Label, Button, Frame, Text, END, DISABLED, RIGHT, TOP, BOTTOM, LEFT
+import tkFont
 import random
 import math
                 
@@ -11,13 +12,24 @@ class GeoGame(Frame):
         master.title("GeoGame")
 
         self.smallim = Image.open("800px-Whole_world_-_land_and_oceans_12000.jpg")
+        self.customFont = tkFont.Font(family="Comic Sans MS", size=12)
         self.im2 = ImageTk.PhotoImage(self.smallim)
         self.click = []
-        self.label = Label(image=self.im2)
+
+        self.topFrame = Frame(master)
+        self.topFrame.pack(side=TOP)
+        self.bottomFrame = Frame(master)
+        self.bottomFrame.pack(side=BOTTOM, fill="both")
+        
+        self.label = Label(self.topFrame, image=self.im2)
         click = self.label.bind("<Button-1>", self.callback)
         self.label.pack()
-        self.text = Text(self.master, height=1, width=40)
-        self.text.pack()
+        self.text = Text(self.bottomFrame, height=1, width=40, font=self.customFont)
+        self.text.pack(side=LEFT)
+        self.scoreText = Text(self.bottomFrame, height=1,width=10)
+        self.scoreText.pack(side=RIGHT)
+        self.scoreLabel = Label(self.bottomFrame, text="Score")
+        self.scoreLabel.pack(side=RIGHT)
         self.text.insert(END, "Your next city is: ")
         self.text.config(state=DISABLED)
         self.data = self.load_file()
@@ -55,6 +67,10 @@ class GeoGame(Frame):
 
     def gameplay(self):
         self.tot_score += self.distance_score()
+        self.scoreText.config(state="normal")
+        self.scoreText.delete("1.00", END)
+        self.scoreText.insert(END, str(self.tot_score))
+        self.scoreText.config(state=DISABLED)
         print "total score = " + str(self.tot_score)
         if str(self.click[0]) == str(self.city[4]) and str(self.click[1]) == str(self.city[5]):
             self.gamesetup()
