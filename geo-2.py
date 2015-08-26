@@ -2,6 +2,7 @@ from PIL import ImageTk
 from PIL import Image
 from Tkinter import Tk, Label, Button
 import random
+import math
                 
 class GeoGame(object):
 
@@ -11,11 +12,12 @@ class GeoGame(object):
 
         self.smallim = Image.open("800px-Whole_world_-_land_and_oceans_12000.jpg")
         self.im2 = ImageTk.PhotoImage(self.smallim)
-	self.click = []
+        self.click = []
         self.label = Label(image=self.im2)
         click = self.label.bind("<Button-1>", self.callback)
         self.label.pack()
         self.data = self.load_file()
+        self.tot_score = 0
         self.gamesetup()
 
     def callback(self, event):
@@ -38,18 +40,32 @@ class GeoGame(object):
     
     def gamesetup(self):
         self.city = self.choose_city()
-	self.city = [x.strip() for x in self.city.split(',')]
-	print "Your city to find is: " + self.city[1]
-	self.score = 0
+        self.city = [x.strip() for x in self.city.split(',')]
+        print "Your city to find is: " + self.city[1]
+        self.score = 0
 
 
     def gameplay(self):
-	if str(self.click[0]) == str(self.city[4]) and str(self.click[1]) == str(self.city[5]):
-	    print "success"
-	    self.gamesetup()
-	else:
-  	    print "you suck"
-	    self.gamesetup()
+        self.tot_score += self.distance_score()
+        print "total score = " + str(self.tot_score)
+        if str(self.click[0]) == str(self.city[4]) and str(self.click[1]) == str(self.city[5]):
+            self.gamesetup()
+        else:
+            self.gamesetup()
+
+    def distance_score(self):
+        xdist = int(self.click[0]) - int(self.city[4])
+        ydist = int(self.click[1]) - int(self.city[5])
+        dist = math.sqrt((xdist + ydist)**2)
+        if dist < 5:
+            score = 20
+        elif 5 <= dist < 10:
+            score = 10
+        else:
+            score = 0
+        print "round score = " + str(score)
+        return score
+        
 
 root = Tk()
 myGeoGame = GeoGame(root)
