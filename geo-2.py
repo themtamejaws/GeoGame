@@ -56,12 +56,9 @@ class GeoGame(object):
     def distance_score(self):
         xdist = int(self.click[0]) - int(self.city[4])
         ydist = int(self.click[1]) - int(self.city[5])
-        dist = math.sqrt((xdist + ydist)**2)
-        if dist < 5:
-            score = 20
-        elif 5 <= dist < 10:
-            score = 10
-        else:
+        dist = int(math.sqrt((xdist + ydist)**2))
+        score = 30 - dist*2
+        if score < 0:
             score = 0
         print "round score = " + str(score)
         return score
