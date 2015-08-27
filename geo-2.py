@@ -11,7 +11,7 @@ class GeoGame(Frame):
         self.master = master
         master.title("GeoGame")
 
-        self.smallim = Image.open("800px-Whole_world_-_land_and_oceans_12000.jpg")
+        self.smallim = Image.open("1200_pix_wide.jpg")
         self.customFont = tkFont.Font(family="Comic Sans MS", size=12)
         self.im2 = ImageTk.PhotoImage(self.smallim)
         self.click = []
@@ -42,7 +42,7 @@ class GeoGame(Frame):
         self.gameplay()
 
     def load_file(self):
-        f = open('database.txt', 'r').readlines()
+        f = open('out2.txt', 'r').readlines()
         data = []
         for line in f:
             data.append(line)
@@ -56,11 +56,11 @@ class GeoGame(Frame):
     
     def gamesetup(self):
         self.city = self.choose_city()
-        self.city = [x.strip() for x in self.city.split(',')]
-        print "Your city to find is: " + self.city[1]
+        self.city = [x.strip() for x in self.city.split('\t')]
+        print "Your city to find is: " + self.city[1] + "," + self.city[4]
         self.text.config(state="normal")
         self.text.delete("1.19", END)
-        self.text.insert(END, self.city[1])
+        self.text.insert(END, self.city[1] + ", " + self.city[4] )
         self.text.config(state=DISABLED)
         self.score = 0
 
@@ -72,14 +72,14 @@ class GeoGame(Frame):
         self.scoreText.insert(END, str(self.tot_score))
         self.scoreText.config(state=DISABLED)
         print "total score = " + str(self.tot_score)
-        if str(self.click[0]) == str(self.city[4]) and str(self.click[1]) == str(self.city[5]):
+        if str(self.click[0]) == str(self.city[2]) and str(self.click[1]) == str(self.city[3]):
             self.gamesetup()
         else:
             self.gamesetup()
 
     def distance_score(self):
-        xdist = int(self.click[0]) - int(self.city[4])
-        ydist = int(self.click[1]) - int(self.city[5])
+        xdist = int(self.click[0]) - int(self.city[2])
+        ydist = int(self.click[1]) - int(self.city[3])
         dist = int(math.sqrt((xdist + ydist)**2))
         score = 30 - dist*2
         if score < 0:
