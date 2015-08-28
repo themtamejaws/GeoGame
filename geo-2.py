@@ -42,7 +42,7 @@ class GeoGame(Frame):
         self.gameplay()
 
     def load_file(self):
-        f = open('out2.txt', 'r').readlines()
+        f = open('out3.txt', 'r').readlines()
         data = []
         for line in f:
             data.append(line)
@@ -57,7 +57,7 @@ class GeoGame(Frame):
     def gamesetup(self):
         self.city = self.choose_city()
         self.city = [x.strip() for x in self.city.split('\t')]
-        print "Your city to find is: " + self.city[1] + "," + self.city[4]
+        print "Your city to find is: " + self.city[1] + ", " + self.city[4]
         self.text.config(state="normal")
         self.text.delete("1.19", END)
         self.text.insert(END, self.city[1] + ", " + self.city[4] )
