@@ -42,16 +42,17 @@ class GeoGame(Frame):
         self.gameplay()
 
     def load_file(self):
-        f = open('out3.txt', 'r').readlines()
+        f = open('sorted.txt', 'r').readlines()
         data = []
         for line in f:
             data.append(line)
-        #f.close()
         return data
 
     def choose_city(self):
         citylen = len(self.data)
-        number = random.randint(0,citylen-1) #maybe not -1
+        number = citylen+1
+	while number > citylen:
+		number = abs(int(random.gauss(0,100)))
         return self.data[number]
     
     def gamesetup(self):
