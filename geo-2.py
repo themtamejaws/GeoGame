@@ -27,11 +27,12 @@ class GeoGame(Frame):
         self.label = self.canvas.create_image(0,0, image=self.im2, anchor='nw')
         click = self.canvas.bind("<Button-1>", self.callback)
 
-        self.crosshairs = Image.open("crosshairs_small.png")
+        self.crosshairs = Image.open("crosshairsg.gif") #GIFs ONLY, PNG's transparency doesn't work
         self.cross_width, self.cross_height = self.crosshairs.size
         self.cross = ImageTk.PhotoImage(self.crosshairs)
         self.first_round = 0
-       
+        
+
         self.text = Text(self.bottomFrame, height=1, width=40, font=self.customFont)
         self.text.pack(side=LEFT)
         self.scoreText = Text(self.bottomFrame, height=1,width=10)
@@ -86,8 +87,8 @@ class GeoGame(Frame):
         print "total score = " + str(self.tot_score)
         print type(self.city[3])
         self.target = self.canvas.create_image(int(self.city[3])-self.cross_width/2, int(self.city[2])-self.cross_height/2, image=self.cross, anchor='nw')
-        #self.canvas.tag_lower(self.label)
-        print self.city[2], self.city[3]
+        self.canvas.tag_raise(self.target)
+        print "wheeyyy" + self.city[2], self.city[3]
         self.first_round = 1
         if str(self.click[0]) == str(self.city[2]) and str(self.click[1]) == str(self.city[3]):
             self.gamesetup()
