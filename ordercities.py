@@ -1,6 +1,6 @@
 from operator import itemgetter
 
-cities = open("out3.txt", 'r').readlines()
+cities = open("out4.txt", 'r').readlines()
 
 data = []
 for line in cities:
@@ -13,7 +13,7 @@ for line in cities:
 data.sort(key=lambda data: data[5])
 data.reverse()
 
-out = open("sorted.txt", 'w')
+out = open("sorted2.txt", 'w')
 
 for line in data:
 	seq = (str(line[0]), str(line[1]), str(line[2]), str(line[3]), str(line[4]), str(line[5]))

@@ -12,7 +12,7 @@ for line in f:
 print data['RS']
 
 g = open("out2.txt", 'r').readlines()
-h = open("out3.txt", 'w')
+h = open("out4.txt", 'w')
 
 for line in g:
     line = line.split('\t')

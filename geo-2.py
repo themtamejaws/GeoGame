@@ -10,12 +10,14 @@ class GeoGame(Frame):
     def __init__(self, master):
         self.master = master
         master.title("GeoGame")
-
-        self.smallim = Image.open("1200_pix_wide.jpg")
-        self.customFont = tkFont.Font(family="Comic Sans MS", size=12)
+	
+        self.smallim = Image.open("mediummap.jpg")
+        self.bigim = Image.open("half.jpg")
+	self.bigim.load()
+	self.customFont = tkFont.Font(family="Comic Sans MS", size=12)
         self.im2 = ImageTk.PhotoImage(self.smallim)
-        self.click = []
 
+	self.click = []
 
 
         self.topFrame = Frame(master)
@@ -27,11 +29,11 @@ class GeoGame(Frame):
         self.label = self.canvas.create_image(0,0, image=self.im2, anchor='nw')
         click = self.canvas.bind("<Button-1>", self.callback)
 
-        self.crosshairs = Image.open("crosshairsg.gif") #GIFs ONLY, PNG's transparency doesn't work
+        self.crosshairs = Image.open("smallcrosshair.gif") #GIFs ONLY, PNG's transparency doesn't work
         self.cross_width, self.cross_height = self.crosshairs.size
         self.cross = ImageTk.PhotoImage(self.crosshairs)
         self.first_round = 0
-        
+	self.zoomed = False        
 
         self.text = Text(self.bottomFrame, height=1, width=40, font=self.customFont)
         self.text.pack(side=LEFT)
@@ -45,10 +47,29 @@ class GeoGame(Frame):
         self.tot_score = 0
         self.gamesetup()
 
+    def change_to_big(self):
+	self.canvas.delete(self.label)
+	upper = (self.click[1]*10) - 300
+	left = (self.click[0]*10) - 600
+	right = (self.click[0]*10) + 600
+	lower = (self.click[1]*10) + 300
+	self.crop_big = self.bigim.crop((left, upper, right, lower))
+	self.crop_big2 = ImageTk.PhotoImage(self.crop_big)
+	self.zoom = self.canvas.create_image(0, 0, image=self.crop_big2, anchor='nw')
+	self.zoomed = True	
+
+    def change_to_small(self):
+	self.canvas.delete(self.zoom)
+	self.label = self.canvas.create_image(0,0, image=self.im2, anchor='nw')	
+    	self.zoomed = False
+
     def callback(self, event):
         print "clicked at", event.x, event.y
         self.click = [event.x, event.y]
-        self.gameplay()
+	if self.zoomed == False:
+		self.change_to_big()
+        else:
+		self.gameplay()
 
     def load_file(self):
         f = open('sorted.txt', 'r').readlines()
@@ -56,7 +77,6 @@ class GeoGame(Frame):
         for line in f:
             data.append(line)
         return data
-
 
     def choose_city(self):
         citylen = len(self.data)
@@ -90,6 +110,7 @@ class GeoGame(Frame):
         self.canvas.tag_raise(self.target)
         print "wheeyyy" + self.city[2], self.city[3]
         self.first_round = 1
+	self.change_to_small()
         if str(self.click[0]) == str(self.city[2]) and str(self.click[1]) == str(self.city[3]):
             self.gamesetup()
         else:

@@ -11,3 +11,4 @@ for line in g:
         if len(line[2]) != 2:
             line[0:2] = [" ".join(line[0:2])]
             print line
+            print "/n /n /n"
