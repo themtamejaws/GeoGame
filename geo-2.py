@@ -92,9 +92,10 @@ class GeoGame(Frame):
 
     def choose_city(self):
         citylen = len(self.data)
-        self.number = citylen+1
-        while self.number > citylen:
-            self.number = abs(int(random.gauss(0,100)))
+        self.number = random.randint(0, citylen)
+	#self.number = citylen+1
+	#while self.number > citylen:
+        #    self.number = abs(int(random.gauss(0,100)))
         return self.data[self.number]
     
     def gamesetup(self):
