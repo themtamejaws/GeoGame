@@ -9,7 +9,8 @@ class GeoGame(Frame):
 
     def __init__(self, master):
         self.master = master
-        master.title("GeoGame")
+        self.master.title("GeoGame")
+	self.master.protocol('WM_DELETE_WINDOW', self.close)
 	
         self.smallim = Image.open("mediummap.jpg")
         self.bigim = Image.open("half.jpg")
@@ -47,13 +48,22 @@ class GeoGame(Frame):
         self.tot_score = 0
         self.gamesetup()
 
+    def close(self):
+	self.master.destroy()
+	fileout = open("sorted2.txt", 'w')
+	for line in self.data:
+	    seq = (str(x) for x in line)
+	    seq = "\t".join(seq)
+	    fileout.write(seq)
+	    fileout.write("\n")
+
     def change_to_big(self):
 	self.canvas.delete(self.label)
-	upper = (self.click[1]*10) - 300
-	left = (self.click[0]*10) - 600
+	self.upper = (self.click[1]*10) - 300
+	self.left = (self.click[0]*10) - 600
 	right = (self.click[0]*10) + 600
 	lower = (self.click[1]*10) + 300
-	self.crop_big = self.bigim.crop((left, upper, right, lower))
+	self.crop_big = self.bigim.crop((self.left, self.upper, right, lower))
 	self.crop_big2 = ImageTk.PhotoImage(self.crop_big)
 	self.zoom = self.canvas.create_image(0, 0, image=self.crop_big2, anchor='nw')
 	self.zoomed = True	
@@ -72,24 +82,24 @@ class GeoGame(Frame):
 		self.gameplay()
 
     def load_file(self):
-        f = open('sorted.txt', 'r').readlines()
+        f = open('sorted2.txt', 'r').readlines()
         data = []
         for line in f:
+	    line = [x.strip() for x in line.split("\t")]
             data.append(line)
+        #f.close()
         return data
 
     def choose_city(self):
         citylen = len(self.data)
-        number = citylen+1
-        while number > citylen:
-            number = abs(int(random.gauss(0,100)))
-        return self.data[number]
+        self.number = citylen+1
+        while self.number > citylen:
+            self.number = abs(int(random.gauss(0,100)))
+        return self.data[self.number]
     
     def gamesetup(self):
         self.city = self.choose_city()
-        self.city = [x.strip() for x in self.city.split('\t')]
-        print "Your city to find is: " + self.city[1] + ", " + self.city[4]
-        self.text.config(state="normal")
+	self.text.config(state="normal")
         self.text.delete("1.19", END)
         self.text.insert(END, self.city[1] + ", " + self.city[4] )
         self.text.config(state=DISABLED)
@@ -104,28 +114,32 @@ class GeoGame(Frame):
         self.scoreText.delete("1.00", END)
         self.scoreText.insert(END, str(self.tot_score))
         self.scoreText.config(state=DISABLED)
-        print "total score = " + str(self.tot_score)
-        print type(self.city[3])
-        self.target = self.canvas.create_image(int(self.city[3])-self.cross_width/2, int(self.city[2])-self.cross_height/2, image=self.cross, anchor='nw')
+        self.change_to_small()
+	x = int(int(self.city[3])/10)
+	y = int(int(self.city[2])/10)
+
+	self.target = self.canvas.create_image(int(x)-self.cross_width/2, int(y)-self.cross_height/2, image=self.cross, anchor='nw')
         self.canvas.tag_raise(self.target)
-        print "wheeyyy" + self.city[2], self.city[3]
         self.first_round = 1
-	self.change_to_small()
-        if str(self.click[0]) == str(self.city[2]) and str(self.click[1]) == str(self.city[3]):
-            self.gamesetup()
-        else:
-            self.gamesetup()
+        self.gamesetup()
+	self.update_difficulty()
 
     def distance_score(self):
-        xdist = int(self.click[0]) - int(self.city[2])
-        ydist = int(self.click[1]) - int(self.city[3])
-        dist = int(math.sqrt((xdist + ydist)**2))
-        score = 30 - dist*2
+        offsetx = self.click[0]+self.left
+	offsety = self.click[1]+self.upper
+	
+	ydist = int(offsety) - int(self.city[2])
+        xdist = int(offsetx) - int(self.city[3])
+        self.dist = int(math.sqrt((xdist)**2 + (ydist)**2))
+	score = int(500 - self.dist**1.5)
         if score < 0:
             score = 0
         print "round score = " + str(score)
         return score
         
+    def update_difficulty(self):
+	self.data[self.number][7] = (float(self.city[7])*float(self.city[6]) + self.dist) / (float(self.city[6]) + 1)
+	self.data[self.number][6] = int(self.data[self.number][6]) + 1
 
 root = Tk()
 myGeoGame = GeoGame(root)

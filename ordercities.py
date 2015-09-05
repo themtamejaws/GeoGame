@@ -16,7 +16,7 @@ data.reverse()
 out = open("sorted2.txt", 'w')
 
 for line in data:
-	seq = (str(line[0]), str(line[1]), str(line[2]), str(line[3]), str(line[4]), str(line[5]))
+	seq = (str(line[0]), str(line[1]), str(line[2]), str(line[3]), str(line[4]), str(line[5]), "1", "100")
 	out.write("\t".join(seq))
 	out.write("\n")
 
