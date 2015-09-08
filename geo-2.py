@@ -4,6 +4,8 @@ from Tkinter import Tk, Label, Button, Frame, Text, END, DISABLED, RIGHT, TOP, B
 import tkFont
 import random
 import math
+import time
+import sys
                 
 class GeoGame(Frame):
 
@@ -30,11 +32,11 @@ class GeoGame(Frame):
         click = self.canvas.bind("<Button-1>", self.callback)
 
         self.crosshairs = Image.open("targetcrosshair.gif") #GIFs ONLY, PNG's transparency doesn't work
-	self.crosshairs2 = Image.open("clickcrosshair.gif")
+        self.crosshairs2 = Image.open("clickcrosshair.gif")
         self.cross_width, self.cross_height = self.crosshairs.size
-	self.cross_width2, self.cross_height2 = self.crosshairs2.size
+        self.cross_width2, self.cross_height2 = self.crosshairs2.size
         self.cross = ImageTk.PhotoImage(self.crosshairs)
-	self.cross2 = ImageTk.PhotoImage(self.crosshairs2)
+        self.cross2 = ImageTk.PhotoImage(self.crosshairs2)
         self.first_round = 0
         self.zoomed = False        
 
@@ -61,9 +63,9 @@ class GeoGame(Frame):
 
     def change_to_big(self):
         self.canvas.delete(self.label)
-	self.zoomposition_x = self.click[0] - 60
-	self.zoomposition_y = self.click[1] - 30
-	self.upper = (self.click[1]*10) - 300
+        self.zoomposition_x = self.click[0] - 60
+        self.zoomposition_y = self.click[1] - 30
+        self.upper = (self.click[1]*10) - 300
         self.left = (self.click[0]*10) - 600
         right = (self.click[0]*10) + 600
         lower = (self.click[1]*10) + 300
@@ -82,7 +84,15 @@ class GeoGame(Frame):
         self.click = [event.x, event.y]
         if self.zoomed == False:
             self.change_to_big()
+            print 'hello'
         else:
+            x = int(int(self.city[3]))-self.left
+            y = int(int(self.city[2]))-self.upper
+            print x, y
+            self.target3 = self.canvas.create_image(x - self.cross_width/2, y - self.cross_height/2,image=self.cross, anchor='nw')
+            self.master.update()
+            time.sleep(2)
+            self.canvas.delete(self.target3)
             self.gameplay()
 
     def load_file(self):
@@ -121,19 +131,19 @@ class GeoGame(Frame):
         self.scoreText.config(state=DISABLED)
         self.change_to_small()
         
-	x = int(int(self.city[3])/10)
+        x = int(int(self.city[3])/10)
         y = int(int(self.city[2])/10)
-	self.x_click = self.zoomposition_x + int(self.click[0]/10)
-	print self.x_click
-	self.y_click = self.zoomposition_y + int(self.click[1]/10)
-	print self.y_click
+        self.x_click = self.zoomposition_x + int(self.click[0]/10)
+        print self.x_click
+        self.y_click = self.zoomposition_y + int(self.click[1]/10)
+        print self.y_click
 
         self.target = self.canvas.create_image(int(x)-self.cross_width/2, int(y)-self.cross_height/2, image=self.cross, anchor='nw')
 
-	self.target2 = self.canvas.create_image(int(self.x_click)-self.cross_width2/2, int(self.y_click)-self.cross_height2/2, image=self.cross2, anchor='nw')
+        self.target2 = self.canvas.create_image(int(self.x_click)-self.cross_width2/2, int(self.y_click)-self.cross_height2/2, image=self.cross2, anchor='nw')
 
-        self.canvas.tag_raise(self.target)
-	self.canvas.tag_raise(self.target2)
+        #self.canvas.tag_raise(self.target)
+        self.canvas.tag_raise(self.target2)
         self.first_round = 1
         self.update_difficulty()
         self.gamesetup()
