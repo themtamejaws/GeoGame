@@ -50,6 +50,9 @@ class GeoGame(Frame):
         self.text.config(state=DISABLED)
         self.data = self.load_file()
         self.tot_score = 0
+        self.level = 1
+        self.difficulty = 50
+        self.go_number = 1
         self.gamesetup()
 
     def close(self):
@@ -80,15 +83,13 @@ class GeoGame(Frame):
         self.zoomed = False
 
     def callback(self, event):
-        print "clicked at", event.x, event.y
         self.click = [event.x, event.y]
         if self.zoomed == False:
             self.change_to_big()
-            print 'hello'
         else:
             x = int(int(self.city[3]))-self.left
             y = int(int(self.city[2]))-self.upper
-            print x, y
+
             self.target3 = self.canvas.create_image(x - self.cross_width/2, y - self.cross_height/2,image=self.cross, anchor='nw')
             self.master.update()
             time.sleep(2)
@@ -106,10 +107,10 @@ class GeoGame(Frame):
 
     def choose_city(self):
         citylen = len(self.data)
-        self.number = random.randint(0, citylen)
-        #self.number = citylen+1
-        #while self.number > citylen:
-        #    self.number = abs(int(random.gauss(0,100)))
+        #self.number = random.randint(0, citylen)
+        self.number = citylen+1
+        while self.number > citylen:
+            self.number = abs(int(random.gauss(self.difficulty,50)))
         return self.data[self.number]
     
     def gamesetup(self):
@@ -119,7 +120,6 @@ class GeoGame(Frame):
         self.text.insert(END, self.city[1] + ", " + self.city[4] )
         self.text.config(state=DISABLED)
         self.score = 0
-
 
     def gameplay(self):
         if self.first_round != 0:
@@ -134,9 +134,7 @@ class GeoGame(Frame):
         x = int(int(self.city[3])/10)
         y = int(int(self.city[2])/10)
         self.x_click = self.zoomposition_x + int(self.click[0]/10)
-        print self.x_click
         self.y_click = self.zoomposition_y + int(self.click[1]/10)
-        print self.y_click
 
         self.target = self.canvas.create_image(int(x)-self.cross_width/2, int(y)-self.cross_height/2, image=self.cross, anchor='nw')
 
@@ -146,8 +144,10 @@ class GeoGame(Frame):
         self.canvas.tag_raise(self.target2)
         self.first_round = 1
         self.update_difficulty()
+        self.go_number += 1
+        if self.go_number == 10:
+            self.level_up()
         self.gamesetup()
-    
 
     def distance_score(self):
         self.offset_x = self.click[0]+self.left
@@ -159,12 +159,18 @@ class GeoGame(Frame):
         score = int(500 - self.dist**1.5)
         if score < 0:
             score = 0
-        print "round score = " + str(score)
+        print "You scored: " + str(score)
         return score
         
     def update_difficulty(self):
         self.data[self.number][7] = (float(self.city[7])*float(self.city[6]) + self.dist) / (float(self.city[6]) + 1)
         self.data[self.number][6] = int(self.data[self.number][6]) + 1
+
+    def level_up(self):
+        self.level += 1
+        print "LEVEL UP, Begin Level " + str(self.level)
+        self.difficulty += 50
+        self.go_number
 
 root = Tk()
 myGeoGame = GeoGame(root)
