@@ -53,6 +53,7 @@ class GeoGame(Frame):
         self.level = 1
         self.difficulty = 50
         self.go_number = 1
+        self.level_score = 0
         self.gamesetup()
 
     def close(self):
@@ -126,6 +127,7 @@ class GeoGame(Frame):
         if self.first_round != 0:
             self.canvas.delete(self.target)
         self.tot_score += self.distance_score()
+        self.level_score += self.distance_score()
         self.scoreText.config(state="normal")
         self.scoreText.delete("1.00", END)
         self.scoreText.insert(END, str(self.tot_score))
@@ -146,7 +148,7 @@ class GeoGame(Frame):
         self.first_round = 1
         self.update_difficulty()
         self.go_number += 1
-        if self.go_number == 10:
+        if self.go_number > 10 and self.level_score > 2000:
             self.level_up()
         self.gamesetup()
 
@@ -171,7 +173,8 @@ class GeoGame(Frame):
         self.level += 1
         print "LEVEL UP, Begin Level " + str(self.level)
         self.difficulty += 50
-        self.go_number
+        self.go_number = 1
+        self.level_score
 
 root = Tk()
 myGeoGame = GeoGame(root)
