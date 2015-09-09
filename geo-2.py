@@ -91,6 +91,7 @@ class GeoGame(Frame):
             y = int(int(self.city[2]))-self.upper
 
             self.target3 = self.canvas.create_image(x - self.cross_width/2, y - self.cross_height/2,image=self.cross, anchor='nw')
+            self.target4 = self.canvas.create_image(self.click[0] - self.cross_width2/2, self.click[1]-self.cross_height2/2, image=self.cross2, anchor='nw') 
             self.master.update()
             time.sleep(2)
             self.canvas.delete(self.target3)
