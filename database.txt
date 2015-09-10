@@ -1,3 +1,0 @@
-1, london, UK, 12000000, 404, 90 
-2, Paris, France, 10000000, 406, 100 
-3, Berlin, Germany, 5000000, 423, 91

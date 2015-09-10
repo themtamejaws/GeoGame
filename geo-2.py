@@ -4,6 +4,7 @@ from Tkinter import Tk, Label, Button, Frame, Text, END, DISABLED, RIGHT, TOP, B
 import tkFont
 import random
 import math
+from math import radians, cos, sin, asin, sqrt
 import time
 import sys
                 
@@ -14,8 +15,8 @@ class GeoGame(Frame):
         self.master.title("GeoGame")
         self.master.protocol('WM_DELETE_WINDOW', self.close)
     
-        self.smallim = Image.open("mediummap.jpg")
-        self.bigim = Image.open("half.jpg")
+        self.smallim = Image.open("textures/maps/medium_map.jpg")
+        self.bigim = Image.open("textures/maps/big_map.jpg")
         self.bigim.load()
         self.customFont = tkFont.Font(family="Comic Sans MS", size=12)
         self.im2 = ImageTk.PhotoImage(self.smallim)
@@ -31,8 +32,8 @@ class GeoGame(Frame):
         self.label = self.canvas.create_image(0,0, image=self.im2, anchor='nw')
         click = self.canvas.bind("<Button-1>", self.callback)
 
-        self.crosshairs = Image.open("targetcrosshair.gif") #GIFs ONLY, PNG's transparency doesn't work
-        self.crosshairs2 = Image.open("clickcrosshair.gif")
+        self.crosshairs = Image.open("textures/crosshairs/targetcrosshair.gif") #GIFs ONLY, PNG's transparency doesn't work
+        self.crosshairs2 = Image.open("textures/crosshairs/clickcrosshair.gif")
         self.cross_width, self.cross_height = self.crosshairs.size
         self.cross_width2, self.cross_height2 = self.crosshairs2.size
         self.cross = ImageTk.PhotoImage(self.crosshairs)
@@ -126,8 +127,9 @@ class GeoGame(Frame):
     def gameplay(self):
         if self.first_round != 0:
             self.canvas.delete(self.target)
-        self.tot_score += self.distance_score()
-        self.level_score += self.distance_score()
+        go_score = self.distance_score()
+        self.tot_score += go_score
+        self.level_score += go_score
         self.scoreText.config(state="normal")
         self.scoreText.delete("1.00", END)
         self.scoreText.insert(END, str(self.tot_score))
@@ -148,22 +150,50 @@ class GeoGame(Frame):
         self.first_round = 1
         self.update_difficulty()
         self.go_number += 1
-        if self.go_number > 10 and self.level_score > 2000:
-            self.level_up()
+        if self.go_number == 10:
+            if self.level_score > 1000:
+                self.level_up()
+            else:
+                self.level_fail()
         self.gamesetup()
 
     def distance_score(self):
-        self.offset_x = self.click[0]+self.left
-        self.offset_y = self.click[1]+self.upper
-    
-        ydist = int(self.offset_y) - int(self.city[2])
-        xdist = int(self.offset_x) - int(self.city[3])
-        self.dist = int(math.sqrt((xdist)**2 + (ydist)**2))
-        score = int(500 - self.dist**1.5)
+        self.offset_x = float(self.click[0]+self.left)
+        self.offset_y = float(self.click[1]+self.upper)
+
+        click_long = (self.offset_x - 6000) * 0.03
+        click_lat = (3000 - self.offset_y) * 0.03
+
+        city_long = (int(self.city[3]) - 6000) * 0.03
+        city_lat = (3000 - int(self.city[2])) * 0.03
+
+        #ydist = int(self.offset_y) - int(self.city[2])
+        #xdist = int(self.offset_x) - int(self.city[3])
+        #self.dist = int(math.sqrt((xdist)**2 + (ydist)**2))
+
+        self.dist = self.haversine(click_long, click_lat, city_long, city_lat)
+
+        score = int(1000/ (self.dist**0.5))
         if score < 0:
             score = 0
         print "You scored: " + str(score)
         return score
+
+    def haversine(self, lon1, lat1, lon2, lat2):
+        """
+        Calculate the great circle distance between two points 
+        on the earth (specified in decimal degrees)
+        """
+        # convert decimal degrees to radians 
+        lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
+
+        # haversine formula 
+        dlon = lon2 - lon1 
+        dlat = lat2 - lat1 
+        a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+        c = 2 * asin(sqrt(a)) 
+        r = 6371 # Radius of earth in kilometers. Use 3956 for miles
+        return c * r
         
     def update_difficulty(self):
         self.data[self.number][7] = (float(self.city[7])*float(self.city[6]) + self.dist) / (float(self.city[6]) + 1)
@@ -174,7 +204,14 @@ class GeoGame(Frame):
         print "LEVEL UP, Begin Level " + str(self.level)
         self.difficulty += 50
         self.go_number = 1
-        self.level_score
+        self.level_score = 0
+
+    def level_fail(self):
+        self.level = 1
+        print "YOU FAILED, Begin Level 1"
+        self.difficulty = 50
+        self.go_number = 1
+        self.level_score = 0
 
 root = Tk()
 myGeoGame = GeoGame(root)
