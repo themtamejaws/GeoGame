@@ -52,6 +52,7 @@ class GeoGame(Frame):
         self.data = self.load_file()
         self.tot_score = 0
         self.level = 1
+        self.level_pass = 1000 * (1.2 ** (self.level-1))
         self.difficulty = 50
         self.go_number = 1
         self.level_score = 0
@@ -66,7 +67,7 @@ class GeoGame(Frame):
             fileout.write(seq)
             fileout.write("\n")
 
-    def change_to_big(self):
+    def zoom_in(self):
         self.canvas.delete(self.label)
         self.zoomposition_x = self.click[0] - 60
         self.zoomposition_y = self.click[1] - 30
@@ -79,7 +80,7 @@ class GeoGame(Frame):
         self.zoom = self.canvas.create_image(0, 0, image=self.crop_big2, anchor='nw')
         self.zoomed = True  
 
-    def change_to_small(self):
+    def zoom_out(self):
         self.canvas.delete(self.zoom)
         self.label = self.canvas.create_image(0,0, image=self.im2, anchor='nw') 
         self.zoomed = False
@@ -87,7 +88,7 @@ class GeoGame(Frame):
     def callback(self, event):
         self.click = [event.x, event.y]
         if self.zoomed == False:
-            self.change_to_big()
+            self.zoom_in()
         else:
             x = int(int(self.city[3]))-self.left
             y = int(int(self.city[2]))-self.upper
@@ -105,7 +106,6 @@ class GeoGame(Frame):
         for line in f:
             line = [x.strip() for x in line.split("\t")]
             data.append(line)
-        #f.close()
         return data
 
     def choose_city(self):
@@ -134,7 +134,7 @@ class GeoGame(Frame):
         self.scoreText.delete("1.00", END)
         self.scoreText.insert(END, str(self.tot_score))
         self.scoreText.config(state=DISABLED)
-        self.change_to_small()
+        self.zoom_out()
         
         x = int(int(self.city[3])/10)
         y = int(int(self.city[2])/10)
@@ -145,13 +145,13 @@ class GeoGame(Frame):
 
         self.target2 = self.canvas.create_image(int(self.x_click)-self.cross_width2/2, int(self.y_click)-self.cross_height2/2, image=self.cross2, anchor='nw')
 
-        #self.canvas.tag_raise(self.target)
         self.canvas.tag_raise(self.target2)
         self.first_round = 1
         self.update_difficulty()
         self.go_number += 1
+
         if self.go_number == 10:
-            if self.level_score > 1000:
+            if self.level_score > self.level_pass:
                 self.level_up()
             else:
                 self.level_fail()
@@ -171,15 +171,18 @@ class GeoGame(Frame):
         #xdist = int(self.offset_x) - int(self.city[3])
         #self.dist = int(math.sqrt((xdist)**2 + (ydist)**2))
 
-        self.dist = self.haversine(click_long, click_lat, city_long, city_lat)
+        self.dist = self.global_distance(click_long, click_lat, city_long, city_lat)
 
-        score = int(1000/ (self.dist**0.5))
+        if self.dist == 0:
+            score = 1000 * (1.2 ** (self.level - 1))
+        else:
+            score = int((1000*(1.2 ** (self.level - 1)))/ (self.dist**0.5))
         if score < 0:
             score = 0
         print "You scored: " + str(score)
         return score
 
-    def haversine(self, lon1, lat1, lon2, lat2):
+    def global_distance(self, lon1, lat1, lon2, lat2):
         """
         Calculate the great circle distance between two points 
         on the earth (specified in decimal degrees)
@@ -201,6 +204,7 @@ class GeoGame(Frame):
 
     def level_up(self):
         self.level += 1
+        self.level_pass = 1000 * (1.2 ** (self.level-1))
         print "LEVEL UP, Begin Level " + str(self.level)
         self.difficulty += 50
         self.go_number = 1
@@ -208,10 +212,12 @@ class GeoGame(Frame):
 
     def level_fail(self):
         self.level = 1
+        self.level_pass = 1000 * (1.2 ** (self.level-1))
         print "YOU FAILED, Begin Level 1"
         self.difficulty = 50
         self.go_number = 1
         self.level_score = 0
+        self.tot_score = 0
 
 root = Tk()
 myGeoGame = GeoGame(root)
