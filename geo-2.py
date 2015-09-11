@@ -212,6 +212,11 @@ class GeoGame(Frame):
         self.difficulty = 50
         self.go_number = 1
         self.level_score = 0
+        self.tot_score = 0
+        self.scoreText.config(state="normal")
+        self.scoreText.delete("1.00", END)
+        self.scoreText.insert(END, str(self.tot_score))
+        self.scoreText.config(state=DISABLED)
 
 root = Tk()
 myGeoGame = GeoGame(root)
