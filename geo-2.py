@@ -172,8 +172,11 @@ class GeoGame(Frame):
         #self.dist = int(math.sqrt((xdist)**2 + (ydist)**2))
 
         self.dist = self.haversine(click_long, click_lat, city_long, city_lat)
-
-        score = int(1000/ (self.dist**0.5))
+        maxscore = 1000
+        if score == maxscore:
+            pass
+        else:
+            score = int(maxscore/ (self.dist**0.5))
         if score < 0:
             score = 0
         print "You scored: " + str(score)
