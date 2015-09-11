@@ -55,6 +55,7 @@ class GeoGame(Frame):
         self.levelText.config(state=DISABLED)
         self.levelLabel = Label(self.bottomFrame, text='Level 1 Score')
         self.levelLabel.pack(side=RIGHT)
+
         self.data = self.load_file()
         self.tot_score = 0
         self.level = 1
