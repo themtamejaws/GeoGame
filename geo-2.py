@@ -70,6 +70,10 @@ class GeoGame(Frame):
         self.master.destroy()
         fileout = open("sorted2.txt", 'w')
         for line in self.data:
+            population_difficulty =  (22315475 - int(line[5]) ) / 223155
+            gameplay_difficulty =  100 - ( 3000 - float(line[7]) )/ 30 
+            new_difficulty = ( population_difficulty + ( int(line[6]) * gameplay_difficulty ) ) / ( int(line[6]) + 1)
+            line.append(new_difficulty)
             seq = (str(x) for x in line)
             seq = "\t".join(seq)
             fileout.write(seq)
@@ -109,17 +113,17 @@ class GeoGame(Frame):
             self.gameplay()
 
     def load_file(self):
-        f = open('sorted2.txt', 'r').readlines()
+        opened_file = open('sorted2.txt', 'r').readlines()
         data = []
-        for line in f:
+        for line in opened_file:
             line = [x.strip() for x in line.split("\t")]
             data.append(line)
         return data
 
     def choose_city(self):
-        citylen = len(self.data)
-        self.number = citylen+1
-        while self.number > citylen:
+        citylength  = len(self.data)
+        self.number = citylength + 1
+        while self.number > citylength:
             while self.number in self.asked_index:
                 self.number = abs(int(random.gauss(self.difficulty,50)))
         self.asked_index.append(self.number)
@@ -148,7 +152,6 @@ class GeoGame(Frame):
         self.levelText.delete("1.00", END)
         self.levelText.insert(END, str(self.level_score) + "/" + str(int(self.max_score())))
         self.scoreText.config(state=DISABLED)
-
 
         self.zoom_out()
         
