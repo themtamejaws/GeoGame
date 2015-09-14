@@ -41,27 +41,44 @@ class GeoGame(Frame):
         self.first_round = 0
         self.zoomed = False        
 
+        self.data = self.load_file()
+        self.tot_score = 0
+        self.level = 1
+        self.level_pass = self.max_score()
+        self.difficulty = 50
+        self.go_number = 1
+        self.level_score = 0
+        self.asked_index = [ (len(self.data)+1)]
+
         self.text = Text(self.bottomFrame, height=1, width=40, font=self.customFont)
         self.text.pack(side=LEFT)
         self.scoreText = Text(self.bottomFrame, height=1,width=10)
         self.scoreText.pack(side=RIGHT)
-        self.scoreLabel = Label(self.bottomFrame, text="Score")
+        self.scoreText.insert(END, str(self.tot_score))
+        self.scoreText.config(state=DISABLED)
+        self.scoreLabel = Label(self.bottomFrame, text="Total Score")
         self.scoreLabel.pack(side=RIGHT)
         self.text.insert(END, "Your next city is: ")
         self.text.config(state=DISABLED)
-        self.data = self.load_file()
-        self.tot_score = 0
-        self.level = 1
-        self.level_pass = 1000 * (1.2 ** (self.level-1))
-        self.difficulty = 50
-        self.go_number = 1
-        self.level_score = 0
-        self.gamesetup()
+        self.levelText = Text(self.bottomFrame, height=1, width=10)
+        self.levelText.pack(side=RIGHT)
+        self.levelText.insert(END, str(self.level_score) + "/" + str(int(self.max_score())))
+        self.levelText.config(state=DISABLED)
+        self.levelLabel = Label(self.bottomFrame, text='Level 1 Score')
+        self.levelLabel.pack(side=RIGHT)
 
+
+
+        self.gamesetup()
+        
     def close(self):
         self.master.destroy()
         fileout = open("sorted2.txt", 'w')
         for line in self.data:
+            population_difficulty =  (22315475 - int(line[5]) ) / 223155
+            gameplay_difficulty =  100 - ( 3000 - float(line[7]) )/ 30 
+            new_difficulty = ( population_difficulty + ( int(line[6]) * gameplay_difficulty ) ) / ( int(line[6]) + 1)
+            line.append(new_difficulty)
             seq = (str(x) for x in line)
             seq = "\t".join(seq)
             fileout.write(seq)
@@ -101,19 +118,20 @@ class GeoGame(Frame):
             self.gameplay()
 
     def load_file(self):
-        f = open('sorted2.txt', 'r').readlines()
+        opened_file = open('sorted2.txt', 'r').readlines()
         data = []
-        for line in f:
+        for line in opened_file:
             line = [x.strip() for x in line.split("\t")]
             data.append(line)
         return data
 
     def choose_city(self):
-        citylen = len(self.data)
-        #self.number = random.randint(0, citylen)
-        self.number = citylen+1
-        while self.number > citylen:
-            self.number = abs(int(random.gauss(self.difficulty,50)))
+        citylength  = len(self.data)
+        self.number = citylength + 1
+        while self.number > citylength:
+            while self.number in self.asked_index:
+                self.number = abs(int(random.gauss(self.difficulty,50)))
+        self.asked_index.append(self.number)
         return self.data[self.number]
     
     def gamesetup(self):
@@ -130,10 +148,16 @@ class GeoGame(Frame):
         go_score = self.distance_score()
         self.tot_score += go_score
         self.level_score += go_score
+
         self.scoreText.config(state="normal")
         self.scoreText.delete("1.00", END)
         self.scoreText.insert(END, str(self.tot_score))
         self.scoreText.config(state=DISABLED)
+        self.levelText.config(state="normal")
+        self.levelText.delete("1.00", END)
+        self.levelText.insert(END, str(self.level_score) + "/" + str(int(self.max_score())))
+        self.levelText.config(state=DISABLED)
+
         self.zoom_out()
         
         x = int(int(self.city[3])/10)
@@ -174,9 +198,10 @@ class GeoGame(Frame):
         self.dist = self.global_distance(click_long, click_lat, city_long, city_lat)
 
         if self.dist == 0:
-            score = 1000 * (1.2 ** (self.level - 1))
+            score = self.max_score()
         else:
-            score = int((1000*(1.2 ** (self.level - 1)))/ (self.dist**0.5))
+            score = int( self.max_score() / (self.dist**0.5) )
+
         if score < 0:
             score = 0
         print "You scored: " + str(score)
@@ -204,15 +229,21 @@ class GeoGame(Frame):
 
     def level_up(self):
         self.level += 1
-        self.level_pass = 1000 * (1.2 ** (self.level-1))
+        self.levelLabel.config(text="Level " + str(self.level) + " Score")
+        self.level_pass = self.max_score()
         print "LEVEL UP, Begin Level " + str(self.level)
         self.difficulty += 50
         self.go_number = 1
         self.level_score = 0
+        self.levelText.config(state="normal")
+        self.levelText.delete("1.00", END)
+        self.levelText.insert(END, str(self.level_score) + "/" + str(int(self.max_score())))
+        self.levelText.config(state=DISABLED)
 
     def level_fail(self):
         self.level = 1
-        self.level_pass = 1000 * (1.2 ** (self.level-1))
+        self.levelLabel.config(text="Level " + str(self.level) + " Score")
+        self.level_pass = self.max_score()
         print "YOU FAILED, Begin Level 1"
         self.difficulty = 50
         self.go_number = 1
@@ -222,8 +253,15 @@ class GeoGame(Frame):
         self.scoreText.delete("1.00", END)
         self.scoreText.insert(END, str(self.tot_score))
         self.scoreText.config(state=DISABLED)
+        self.levelText.config(state="normal")
+        self.levelText.delete("1.00", END)
+        self.levelText.insert(END, str(self.level_score) + "/" + str(int(self.max_score())))
+        self.levelText.config(state=DISABLED)
 
+    def max_score(self):
 
+        return 1000 * (1.2 ** (self.level-1))
+        
 root = Tk()
 myGeoGame = GeoGame(root)
 root.mainloop()
