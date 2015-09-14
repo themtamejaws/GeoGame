@@ -45,28 +45,41 @@ class GeoGame(Frame):
         self.text.pack(side=LEFT)
         self.scoreText = Text(self.bottomFrame, height=1,width=10)
         self.scoreText.pack(side=RIGHT)
-        self.scoreLabel = Label(self.bottomFrame, text="Score")
+        self.scoreText.config(state=DISABLED)
+        self.scoreLabel = Label(self.bottomFrame, text="Total Score")
         self.scoreLabel.pack(side=RIGHT)
         self.text.insert(END, "Your next city is: ")
         self.text.config(state=DISABLED)
+        self.levelText = Text(self.bottomFrame, height=1, width=10)
+        self.levelText.pack(side=RIGHT)
+        self.levelText.config(state=DISABLED)
+        self.levelLabel = Label(self.bottomFrame, text='Level 1 Score')
+        self.levelLabel.pack(side=RIGHT)
+
         self.data = self.load_file()
         self.tot_score = 0
         self.level = 1
+        self.level_pass = self.max_score()
         self.difficulty = 50
         self.go_number = 1
         self.level_score = 0
+        self.asked_index = [ (len(self.data)+1)]
         self.gamesetup()
-
+        
     def close(self):
         self.master.destroy()
         fileout = open("sorted2.txt", 'w')
         for line in self.data:
+            population_difficulty =  (22315475 - int(line[5]) ) / 223155
+            gameplay_difficulty =  100 - ( 3000 - float(line[7]) )/ 30 
+            new_difficulty = ( population_difficulty + ( int(line[6]) * gameplay_difficulty ) ) / ( int(line[6]) + 1)
+            line.append(new_difficulty)
             seq = (str(x) for x in line)
             seq = "\t".join(seq)
             fileout.write(seq)
             fileout.write("\n")
 
-    def change_to_big(self):
+    def zoom_in(self):
         self.canvas.delete(self.label)
         self.zoomposition_x = self.click[0] - 60
         self.zoomposition_y = self.click[1] - 30
@@ -79,7 +92,7 @@ class GeoGame(Frame):
         self.zoom = self.canvas.create_image(0, 0, image=self.crop_big2, anchor='nw')
         self.zoomed = True  
 
-    def change_to_small(self):
+    def zoom_out(self):
         self.canvas.delete(self.zoom)
         self.label = self.canvas.create_image(0,0, image=self.im2, anchor='nw') 
         self.zoomed = False
@@ -87,7 +100,7 @@ class GeoGame(Frame):
     def callback(self, event):
         self.click = [event.x, event.y]
         if self.zoomed == False:
-            self.change_to_big()
+            self.zoom_in()
         else:
             x = int(int(self.city[3]))-self.left
             y = int(int(self.city[2]))-self.upper
@@ -100,20 +113,20 @@ class GeoGame(Frame):
             self.gameplay()
 
     def load_file(self):
-        f = open('sorted2.txt', 'r').readlines()
+        opened_file = open('sorted2.txt', 'r').readlines()
         data = []
-        for line in f:
+        for line in opened_file:
             line = [x.strip() for x in line.split("\t")]
             data.append(line)
-        #f.close()
         return data
 
     def choose_city(self):
-        citylen = len(self.data)
-        #self.number = random.randint(0, citylen)
-        self.number = citylen+1
-        while self.number > citylen:
-            self.number = abs(int(random.gauss(self.difficulty,50)))
+        citylength  = len(self.data)
+        self.number = citylength + 1
+        while self.number > citylength:
+            while self.number in self.asked_index:
+                self.number = abs(int(random.gauss(self.difficulty,50)))
+        self.asked_index.append(self.number)
         return self.data[self.number]
     
     def gamesetup(self):
@@ -130,11 +143,17 @@ class GeoGame(Frame):
         go_score = self.distance_score()
         self.tot_score += go_score
         self.level_score += go_score
+
         self.scoreText.config(state="normal")
         self.scoreText.delete("1.00", END)
         self.scoreText.insert(END, str(self.tot_score))
         self.scoreText.config(state=DISABLED)
-        self.change_to_small()
+        self.levelText.config(state="normal")
+        self.levelText.delete("1.00", END)
+        self.levelText.insert(END, str(self.level_score) + "/" + str(int(self.max_score())))
+        self.scoreText.config(state=DISABLED)
+
+        self.zoom_out()
         
         x = int(int(self.city[3])/10)
         y = int(int(self.city[2])/10)
@@ -145,13 +164,13 @@ class GeoGame(Frame):
 
         self.target2 = self.canvas.create_image(int(self.x_click)-self.cross_width2/2, int(self.y_click)-self.cross_height2/2, image=self.cross2, anchor='nw')
 
-        #self.canvas.tag_raise(self.target)
         self.canvas.tag_raise(self.target2)
         self.first_round = 1
         self.update_difficulty()
         self.go_number += 1
+
         if self.go_number == 10:
-            if self.level_score > 1000:
+            if self.level_score > self.level_pass:
                 self.level_up()
             else:
                 self.level_fail()
@@ -171,18 +190,19 @@ class GeoGame(Frame):
         #xdist = int(self.offset_x) - int(self.city[3])
         #self.dist = int(math.sqrt((xdist)**2 + (ydist)**2))
 
-        self.dist = self.haversine(click_long, click_lat, city_long, city_lat)
-        maxscore = 1000
-        if score == maxscore:
-            pass
+        self.dist = self.global_distance(click_long, click_lat, city_long, city_lat)
+
+        if self.dist == 0:
+            score = self.max_score()
         else:
-            score = int(maxscore/ (self.dist**0.5))
+            score = int( self.max_score() / (self.dist**0.5) )
+
         if score < 0:
             score = 0
         print "You scored: " + str(score)
         return score
 
-    def haversine(self, lon1, lat1, lon2, lat2):
+    def global_distance(self, lon1, lat1, lon2, lat2):
         """
         Calculate the great circle distance between two points 
         on the earth (specified in decimal degrees)
@@ -204,6 +224,8 @@ class GeoGame(Frame):
 
     def level_up(self):
         self.level += 1
+        self.levelLabel.config(text="Level " + str(self.level) + " Score")
+        self.level_pass = self.max_score()
         print "LEVEL UP, Begin Level " + str(self.level)
         self.difficulty += 50
         self.go_number = 1
@@ -211,6 +233,8 @@ class GeoGame(Frame):
 
     def level_fail(self):
         self.level = 1
+        self.levelLabel.config(text="Level " + str(self.level) + " Score")
+        self.level_pass = self.max_score()
         print "YOU FAILED, Begin Level 1"
         self.difficulty = 50
         self.go_number = 1
@@ -220,6 +244,10 @@ class GeoGame(Frame):
         self.scoreText.delete("1.00", END)
         self.scoreText.insert(END, str(self.tot_score))
         self.scoreText.config(state=DISABLED)
+
+    def max_score(self):
+
+        return 1000 * (1.2 ** (self.level-1))
 
 root = Tk()
 myGeoGame = GeoGame(root)
