@@ -41,21 +41,6 @@ class GeoGame(Frame):
         self.first_round = 0
         self.zoomed = False        
 
-        self.text = Text(self.bottomFrame, height=1, width=40, font=self.customFont)
-        self.text.pack(side=LEFT)
-        self.scoreText = Text(self.bottomFrame, height=1,width=10)
-        self.scoreText.pack(side=RIGHT)
-        self.scoreText.config(state=DISABLED)
-        self.scoreLabel = Label(self.bottomFrame, text="Total Score")
-        self.scoreLabel.pack(side=RIGHT)
-        self.text.insert(END, "Your next city is: ")
-        self.text.config(state=DISABLED)
-        self.levelText = Text(self.bottomFrame, height=1, width=10)
-        self.levelText.pack(side=RIGHT)
-        self.levelText.config(state=DISABLED)
-        self.levelLabel = Label(self.bottomFrame, text='Level 1 Score')
-        self.levelLabel.pack(side=RIGHT)
-
         self.data = self.load_file()
         self.tot_score = 0
         self.level = 1
@@ -64,6 +49,26 @@ class GeoGame(Frame):
         self.go_number = 1
         self.level_score = 0
         self.asked_index = [ (len(self.data)+1)]
+
+        self.text = Text(self.bottomFrame, height=1, width=40, font=self.customFont)
+        self.text.pack(side=LEFT)
+        self.scoreText = Text(self.bottomFrame, height=1,width=10)
+        self.scoreText.pack(side=RIGHT)
+        self.scoreText.insert(END, str(self.tot_score))
+        self.scoreText.config(state=DISABLED)
+        self.scoreLabel = Label(self.bottomFrame, text="Total Score")
+        self.scoreLabel.pack(side=RIGHT)
+        self.text.insert(END, "Your next city is: ")
+        self.text.config(state=DISABLED)
+        self.levelText = Text(self.bottomFrame, height=1, width=10)
+        self.levelText.pack(side=RIGHT)
+        self.levelText.insert(END, str(self.level_score) + "/" + str(int(self.max_score())))
+        self.levelText.config(state=DISABLED)
+        self.levelLabel = Label(self.bottomFrame, text='Level 1 Score')
+        self.levelLabel.pack(side=RIGHT)
+
+
+
         self.gamesetup()
         
     def close(self):
@@ -151,7 +156,7 @@ class GeoGame(Frame):
         self.levelText.config(state="normal")
         self.levelText.delete("1.00", END)
         self.levelText.insert(END, str(self.level_score) + "/" + str(int(self.max_score())))
-        self.scoreText.config(state=DISABLED)
+        self.levelText.config(state=DISABLED)
 
         self.zoom_out()
         
@@ -230,6 +235,10 @@ class GeoGame(Frame):
         self.difficulty += 50
         self.go_number = 1
         self.level_score = 0
+        self.levelText.config(state="normal")
+        self.levelText.delete("1.00", END)
+        self.levelText.insert(END, str(self.level_score) + "/" + str(int(self.max_score())))
+        self.levelText.config(state=DISABLED)
 
     def level_fail(self):
         self.level = 1
@@ -244,6 +253,10 @@ class GeoGame(Frame):
         self.scoreText.delete("1.00", END)
         self.scoreText.insert(END, str(self.tot_score))
         self.scoreText.config(state=DISABLED)
+        self.levelText.config(state="normal")
+        self.levelText.delete("1.00", END)
+        self.levelText.insert(END, str(self.level_score) + "/" + str(int(self.max_score())))
+        self.levelText.config(state=DISABLED)
 
     def max_score(self):
 
