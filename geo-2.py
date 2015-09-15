@@ -76,7 +76,7 @@ class GeoGame(Frame):
             population_difficulty =  (22315475 - int(line[5]) ) / 223155
             gameplay_difficulty =  100 - ( 3000 - float(line[7]) )/ 30 
             new_difficulty = ( ( 25 * population_difficulty ) + ( int(line[6]) * gameplay_difficulty ) ) / ( int(line[6]) + 26)
-            line.append(new_difficulty)
+            line[8] = new_difficulty
             seq = (str(x) for x in line)
             seq = "\t".join(seq)
             fileout.write(seq)
@@ -258,7 +258,7 @@ class GeoGame(Frame):
 
     def max_score(self):
 
-        return 1000 * (1.2 ** (self.level-1))
+        return int(1000 * (1.2 ** (self.level-1)))
         
 root = Tk()
 myGeoGame = GeoGame(root)

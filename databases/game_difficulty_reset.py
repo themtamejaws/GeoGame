@@ -8,6 +8,6 @@ for line in f:
 	line = line.split('\t')
 	line[6] = '1'
 	line[7] = '100'
-	seq = "\t".join(line[:8])
+	seq = "\t".join(line[:])
 	g.write(seq)
 	g.write('\n')
