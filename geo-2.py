@@ -66,9 +66,7 @@ class GeoGame(Frame):
         self.levelText.config(state=DISABLED)
         self.levelLabel = Label(self.bottomFrame, text='Level 1 Score')
         self.levelLabel.pack(side=RIGHT)
-
-
-
+        
         self.gamesetup()
         
     def close(self):
@@ -77,7 +75,7 @@ class GeoGame(Frame):
         for line in self.data:
             population_difficulty =  (22315475 - int(line[5]) ) / 223155
             gameplay_difficulty =  100 - ( 3000 - float(line[7]) )/ 30 
-            new_difficulty = ( population_difficulty + ( int(line[6]) * gameplay_difficulty ) ) / ( int(line[6]) + 1)
+            new_difficulty = ( ( 25 * population_difficulty ) + ( int(line[6]) * gameplay_difficulty ) ) / ( int(line[6]) + 26)
             line.append(new_difficulty)
             seq = (str(x) for x in line)
             seq = "\t".join(seq)
