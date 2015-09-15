@@ -7,6 +7,7 @@ import math
 from math import radians, cos, sin, asin, sqrt
 import time
 import sys
+import database
                 
 class GeoGame(Frame):
 
@@ -41,14 +42,14 @@ class GeoGame(Frame):
         self.first_round = 0
         self.zoomed = False        
 
-        self.data = self.load_file()
+        self.d = database.Database()
         self.tot_score = 0
         self.level = 1
         self.level_pass = self.max_score()
         self.difficulty = 50
         self.go_number = 1
         self.level_score = 0
-        self.asked_index = [ (len(self.data)+1)]
+        self.asked_index = [ (len(self.d.data)+1)]
 
         self.text = Text(self.bottomFrame, height=1, width=40, font=self.customFont)
         self.text.pack(side=LEFT)
@@ -73,16 +74,7 @@ class GeoGame(Frame):
         
     def close(self):
         self.master.destroy()
-        fileout = open("sorted2.txt", 'w')
-        for line in self.data:
-            population_difficulty =  (22315475 - int(line[5]) ) / 223155
-            gameplay_difficulty =  100 - ( 3000 - float(line[7]) )/ 30 
-            new_difficulty = ( population_difficulty + ( int(line[6]) * gameplay_difficulty ) ) / ( int(line[6]) + 1)
-            line.append(new_difficulty)
-            seq = (str(x) for x in line)
-            seq = "\t".join(seq)
-            fileout.write(seq)
-            fileout.write("\n")
+        self.d.close()
 
     def zoom_in(self):
         self.canvas.delete(self.label)
@@ -107,8 +99,8 @@ class GeoGame(Frame):
         if self.zoomed == False:
             self.zoom_in()
         else:
-            x = int(int(self.city[3]))-self.left
-            y = int(int(self.city[2]))-self.upper
+            x = int(int(self.city.xcord))-self.left
+            y = int(int(self.city.ycord))-self.upper
 
             self.target3 = self.canvas.create_image(x - self.cross_width/2, y - self.cross_height/2,image=self.cross, anchor='nw')
             self.target4 = self.canvas.create_image(self.click[0] - self.cross_width2/2, self.click[1]-self.cross_height2/2, image=self.cross2, anchor='nw') 
@@ -116,29 +108,12 @@ class GeoGame(Frame):
             time.sleep(2)
             self.canvas.delete(self.target3)
             self.gameplay()
-
-    def load_file(self):
-        opened_file = open('sorted2.txt', 'r').readlines()
-        data = []
-        for line in opened_file:
-            line = [x.strip() for x in line.split("\t")]
-            data.append(line)
-        return data
-
-    def choose_city(self):
-        citylength  = len(self.data)
-        self.number = citylength + 1
-        while self.number > citylength:
-            while self.number in self.asked_index:
-                self.number = abs(int(random.gauss(self.difficulty,50)))
-        self.asked_index.append(self.number)
-        return self.data[self.number]
     
     def gamesetup(self):
-        self.city = self.choose_city()
+        self.city, self.asked_index = self.d.choose_city(self.asked_index, self.difficulty)
         self.text.config(state="normal")
         self.text.delete("1.19", END)
-        self.text.insert(END, self.city[1] + ", " + self.city[4] )
+        self.text.insert(END, self.city.cityname + ", " + self.city.country )
         self.text.config(state=DISABLED)
         self.score = 0
 
@@ -160,8 +135,8 @@ class GeoGame(Frame):
 
         self.zoom_out()
         
-        x = int(int(self.city[3])/10)
-        y = int(int(self.city[2])/10)
+        x = int(int(self.city.xcord)/10)
+        y = int(int(self.city.ycord)/10)
         self.x_click = self.zoomposition_x + int(self.click[0]/10)
         self.y_click = self.zoomposition_y + int(self.click[1]/10)
 
@@ -171,7 +146,7 @@ class GeoGame(Frame):
 
         self.canvas.tag_raise(self.target2)
         self.first_round = 1
-        self.update_difficulty()
+        self.city.update_difficulty(self.dist)
         self.go_number += 1
 
         if self.go_number == 10:
@@ -188,12 +163,8 @@ class GeoGame(Frame):
         click_long = (self.offset_x - 6000) * 0.03
         click_lat = (3000 - self.offset_y) * 0.03
 
-        city_long = (int(self.city[3]) - 6000) * 0.03
-        city_lat = (3000 - int(self.city[2])) * 0.03
-
-        #ydist = int(self.offset_y) - int(self.city[2])
-        #xdist = int(self.offset_x) - int(self.city[3])
-        #self.dist = int(math.sqrt((xdist)**2 + (ydist)**2))
+        city_long = (int(self.city.xcord) - 6000) * 0.03
+        city_lat = (3000 - int(self.city.ycord)) * 0.03
 
         self.dist = self.global_distance(click_long, click_lat, city_long, city_lat)
 
@@ -222,10 +193,6 @@ class GeoGame(Frame):
         c = 2 * asin(sqrt(a)) 
         r = 6371 # Radius of earth in kilometers. Use 3956 for miles
         return c * r
-        
-    def update_difficulty(self):
-        self.data[self.number][7] = (float(self.city[7])*float(self.city[6]) + self.dist) / (float(self.city[6]) + 1)
-        self.data[self.number][6] = int(self.data[self.number][6]) + 1
 
     def level_up(self):
         self.level += 1
@@ -265,3 +232,5 @@ class GeoGame(Frame):
 root = Tk()
 myGeoGame = GeoGame(root)
 root.mainloop()
+
+
